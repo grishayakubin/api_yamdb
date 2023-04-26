@@ -10,7 +10,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Categories
-        fields = ('id', 'name', 'description')
+        fields = ('id', 'name', 'slug')
 
     def validate_name(self, value):
         """
@@ -30,7 +30,7 @@ class GenresSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genres
-        fields = ('id', 'name', 'description')
+        fields = ('id', 'name', 'slug')
 
     def validate_name(self, value):
         """
@@ -53,12 +53,11 @@ class TitlesSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            'pub_date',
-            'author',
-            'slug',
+            'year',
             'description',
             'category',
-            'genre'
+            'genre',
+            'rating'
         )
 
     def validate_slug(self, value):

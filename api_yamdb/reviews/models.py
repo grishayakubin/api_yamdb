@@ -1,8 +1,4 @@
-from django.contrib.auth import get_user_model
 from django.db import models
-
-
-User = get_user_model()
 
 
 class Categories(models.Model):
@@ -10,7 +6,9 @@ class Categories(models.Model):
         max_length=50,
         unique=True
     )
-    description = models.TextField(max_length=500)
+    slug = models.SlugField(
+        unique=True
+    )
 
     def __str__(self):
         return self.name
@@ -21,7 +19,9 @@ class Genres(models.Model):
         max_length=50,
         unique=True
     )
-    description = models.TextField(max_length=500)
+    slug = models.SlugField(
+        unique=True
+    )
 
     def __str__(self):
         return self.name
@@ -29,23 +29,14 @@ class Genres(models.Model):
 
 class Titles(models.Model):
     name = models.CharField(
-        max_length=25
+        max_length=256,
+        required=True
     )
-    pub_date = models.DateTimeField(
-        'Дата публикации',
-        auto_now_add=True
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="titles",
-        verbose_name="Автор"
-    )
-    slug = models.SlugField(
-        unique=True
+    year = models.IntegerField(
+        verbose_name='Год'
     )
     description = models.TextField(
-        max_length=255
+        max_length=256
     )
     category = models.ForeignKey(
         Categories,
@@ -65,7 +56,6 @@ class Titles(models.Model):
     )
 
     class Meta:
-        ordering = ['pub_date']
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
