@@ -29,7 +29,8 @@ class Genres(models.Model):
 
 class Titles(models.Model):
     name = models.CharField(
-        max_length=25
+        max_length=25,
+        blank=False
     )
     pub_date = models.DateTimeField(
         'Дата публикации',
