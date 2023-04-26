@@ -30,7 +30,7 @@ class Genres(models.Model):
 class Titles(models.Model):
     name = models.CharField(
         max_length=256,
-        required=True
+        blank=False
     )
     year = models.IntegerField(
         verbose_name='Год'
