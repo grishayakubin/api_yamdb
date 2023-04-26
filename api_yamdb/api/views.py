@@ -65,7 +65,7 @@ class TitlesViewSet(ModelViewSet):
     get_queryset(): получение отфильтрованного и отсортированного queryset.
     """
 
-    queryset = Titles.objects.select_related('author')
+    queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminUserOrReadOnly, )
     pagination_class = LimitOffsetPagination
