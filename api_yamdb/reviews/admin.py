@@ -1,14 +1,14 @@
 from django.contrib import admin
 
-from .models import Categories, Genres, Titles
+from .models import Category, Genre, Title
 
 
-class TitlesAdmin(admin.ModelAdmin):
+class TitleAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'year', 'category', 'genre')
     list_filter = ('category', 'genre', 'year')
     search_fields = ('name', 'description')
 
 
-admin.site.register(Categories)
-admin.site.register(Genres)
-admin.site.register(Titles, TitlesAdmin)
+admin.site.register(Category)
+admin.site.register(Genre)
+admin.site.register(Title, TitleAdmin)

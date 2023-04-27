@@ -3,17 +3,13 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.viewsets import ModelViewSet
 
-from reviews.models import Categories, Genres, Titles
+from reviews.models import Category, Genre, Title
 
 from .permissions import IsAdminUserOrReadOnly
-from .serializers import (
-    CategoriesSerializer,
-    GenresSerializer,
-    TitlesSerializer,
-)
+from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
 
 
-class CategoriesViewSet(ModelViewSet):
+class CategoryViewSet(ModelViewSet):
     """
     Класс-контроллер для обработки запросов, относящихся к категориям.
 
@@ -24,12 +20,12 @@ class CategoriesViewSet(ModelViewSet):
         Добавить категорию может только админ, просматривать могут все.
     """
 
-    queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
     permission_classes = (IsAdminUserOrReadOnly, )
 
 
-class GenresViewSet(ModelViewSet):
+class GenreViewSet(ModelViewSet):
     """
     Класс-контроллер для обработки запросов, относящихся к жанрам.
 
@@ -40,12 +36,12 @@ class GenresViewSet(ModelViewSet):
         Добавить жанр может только админ, просматривать могут все.
     """
 
-    queryset = Genres.objects.all()
-    serializer_class = GenresSerializer
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
     permission_classes = (IsAdminUserOrReadOnly, )
 
 
-class TitlesViewSet(ModelViewSet):
+class TitleViewSet(ModelViewSet):
     """
     Класс-контроллер для обработки запросов, относящихся к произведениям.
 
@@ -65,8 +61,8 @@ class TitlesViewSet(ModelViewSet):
     get_queryset(): получение отфильтрованного и отсортированного queryset.
     """
 
-    queryset = Titles.objects.all()
-    serializer_class = TitlesSerializer
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
     permission_classes = (IsAdminUserOrReadOnly, )
     pagination_class = LimitOffsetPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]

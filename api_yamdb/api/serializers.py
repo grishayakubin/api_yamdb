@@ -1,15 +1,15 @@
 from rest_framework import serializers
 
-from reviews.models import Categories, Genres, Titles
+from reviews.models import Category, Genre, Title
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Categories.
     """
 
     class Meta:
-        model = Categories
+        model = Category
         fields = ('id', 'name', 'slug')
 
     def validate_name(self, value):
@@ -23,13 +23,13 @@ class CategoriesSerializer(serializers.ModelSerializer):
         return value
 
 
-class GenresSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Genres.
     """
 
     class Meta:
-        model = Genres
+        model = Genre
         fields = ('id', 'name', 'slug')
 
     def validate_name(self, value):
@@ -43,13 +43,13 @@ class GenresSerializer(serializers.ModelSerializer):
         return value
 
 
-class TitlesSerializer(serializers.ModelSerializer):
+class TitleSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Titles.
     """
 
     class Meta:
-        model = Titles
+        model = Title
         fields = (
             'id',
             'name',
@@ -64,7 +64,7 @@ class TitlesSerializer(serializers.ModelSerializer):
         """
         Проверяет, что slug для произведения уникален.
         """
-        if Titles.objects.filter(slug=value).exists():
+        if Title.objects.filter(slug=value).exists():
             raise serializers.ValidationError(
                 'Произведение с таким slug уже существует.'
             )
