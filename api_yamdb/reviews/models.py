@@ -55,7 +55,7 @@ class Title(models.Model):
         blank=True
     )
     rating = models.ForeignKey(
-        Rating,
+        Review,
         on_delete=models.CASCADE,
         related_name='titles',
         verbose_name='Рейтинг',
