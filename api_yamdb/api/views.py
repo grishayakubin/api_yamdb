@@ -96,8 +96,8 @@ class TitleViewSet(ModelViewSet):
     def get_serializer_class(self):
         '''
         Если запрос является запросом на чтение списка объектов
-        или одного, то используется "TitleViewSerializer", если нет,
-        то TitleWriteSerializer.
+        или одного объекта, то используется "TitleViewSerializer",
+        если нет, то "TitleSerializer".
         '''
         if self.action in ("list", "retrieve"):
             return TitleViewSerializer
