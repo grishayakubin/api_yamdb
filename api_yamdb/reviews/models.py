@@ -17,8 +17,12 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField()
-    score = models.IntegerField()
+    text = models.TextField(
+        'Название', blank=True, help_text='Напишите название'
+    )
+    score = models.IntegerField(
+        'Оценка', blank=True
+    )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews')
     author = models.ForeignKey(
