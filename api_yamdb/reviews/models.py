@@ -10,6 +10,10 @@ class Category(models.Model):
         unique=True
     )
 
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
     def __str__(self):
         return self.name
 
@@ -23,6 +27,10 @@ class Genre(models.Model):
         unique=True
     )
 
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def __str__(self):
         return self.name
 
@@ -33,7 +41,8 @@ class Title(models.Model):
         blank=False
     )
     year = models.IntegerField(
-        verbose_name='Год'
+        verbose_name='Год',
+        blank=True
     )
     description = models.TextField(
         max_length=256
@@ -46,19 +55,10 @@ class Title(models.Model):
         null=True,
         blank=True
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
         related_name='titles',
         verbose_name='Жанр',
-        null=True,
-        blank=True
-    )
-    rating = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-        related_name='titles',
-        verbose_name='Рейтинг',
         null=True,
         blank=True
     )

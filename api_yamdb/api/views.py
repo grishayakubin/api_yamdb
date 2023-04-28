@@ -6,7 +6,12 @@ from rest_framework.viewsets import ModelViewSet
 from reviews.models import Category, Genre, Title
 
 from .permissions import IsAdminUserOrReadOnly
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleSerializer,
+    TitleViewSerializer,
+)
 
 
 class CategoryViewSet(ModelViewSet):
@@ -59,15 +64,16 @@ class TitleViewSet(ModelViewSet):
 
     Методы:
     get_queryset(): получение отфильтрованного и отсортированного queryset.
+    get_serializer_class(): выбор сериализатора в зависимости от типа запроса.
     """
 
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     permission_classes = (IsAdminUserOrReadOnly, )
     pagination_class = LimitOffsetPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['category', 'genre']
-    ordering_fields = ['pub_date']
+    ordering_fields = ['-pub_date']
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_queryset(self):
         """
@@ -86,3 +92,13 @@ class TitleViewSet(ModelViewSet):
             queryset = queryset.filter(name__icontains=search)
 
         return queryset
+
+    def get_serializer_class(self):
+        '''
+        Если запрос является запросом на чтение списка объектов
+        или одного, то используется "TitleViewSerializer", если нет,
+        то TitleWriteSerializer.
+        '''
+        if self.action in ("list", "retrieve"):
+            return TitleViewSerializer
+        return TitleSerializer

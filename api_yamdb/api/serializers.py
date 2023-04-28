@@ -1,11 +1,13 @@
 from rest_framework import serializers
 
+from django.db.models import Avg
+
 from reviews.models import Category, Genre, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """
-    Сериализатор для модели Categories.
+    Сериализатор для модели Category.
     """
 
     class Meta:
@@ -25,7 +27,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для модели Genres.
+    Сериализатор для модели Genre.
     """
 
     class Meta:
@@ -43,29 +45,47 @@ class GenreSerializer(serializers.ModelSerializer):
         return value
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Titles.
-    """
+class TitleViewSerializer(serializers.ModelSerializer):
+    '''Сериализатор для модели Title на чтение данных.'''
+
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = Title
         fields = (
             'id',
             'name',
             'year',
+            'rating',
             'description',
-            'category',
             'genre',
-            'rating'
+            'category',
         )
+        model = Title
 
-    def validate_slug(self, value):
-        """
-        Проверяет, что slug для произведения уникален.
-        """
-        if Title.objects.filter(slug=value).exists():
-            raise serializers.ValidationError(
-                'Произведение с таким slug уже существует.'
-            )
-        return value
+    def get_rating(self, obj):
+        obj = obj.reviews.all().aggregate(rating=Avg('score'))
+        return obj['rating']
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    '''Сериализатор для модели Title на запись данных.'''
+
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(), slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(), slug_field='slug', many=True
+    )
+
+    class Meta:
+        fields = (
+            'id',
+            'name',
+            'description',
+            'year',
+            'category',
+            'genre'
+        )
+        model = Title
