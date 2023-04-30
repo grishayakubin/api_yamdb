@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from users.models import User
@@ -72,28 +73,33 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField(
-        'Название', blank=True, help_text='Напишите название'
+    """Модель для создания таблицы Отзывы."""
+
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='review'
+    )
+    text = models.TextField()
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='review'
     )
     score = models.IntegerField(
-        'Оценка', blank=True
-    )
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name='reviews')
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews')
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        default=1)
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['author', 'title'], name='unique_review',
-            ),
+        constraints = [models.UniqueConstraint(
+            fields=['title', 'author'],
+            name='review_unique')
         ]
-
-    def __str__(self):
-        return self.score
 
 
 class Comment(models.Model):
