@@ -1,4 +1,3 @@
-
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,7 +14,6 @@ from .serializers import (
     ReviewSerializer,
     TitleSerializer,
     TitleViewSerializer,
-
 )
 
 class ReviewViewSet(ModelViewSet):
@@ -123,3 +121,11 @@ class TitleViewSet(ModelViewSet):
         if self.action in ("list", "retrieve"):
             return TitleViewSerializer
         return TitleSerializer
+
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminUserOrReadOnly,]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    search_fields = ['name', ]
+    lookup_field = 'slug'
