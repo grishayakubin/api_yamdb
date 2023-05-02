@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User
+from users.models import User
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -16,7 +16,6 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ("username", "email", "first_name", "last_name")
     list_editable = ("role", "first_name", "last_name")
     list_filter = ("role",)
-
     empty_value_display = "-пусто-"
 
 

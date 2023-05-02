@@ -24,6 +24,12 @@ class User(AbstractUser):
         (ADMIN, "admin"),
     )
 
+    first_name = models.CharField(
+        "Имя пользователя", blank=True, max_length=CONF_CODE_MAX_LEN
+    )
+    first_name = models.CharField(
+        "Имя пользователя", blank=True, max_length=CONF_CODE_MAX_LEN
+    )
     bio = models.TextField(
         "Биография", blank=True, help_text="Здесь напишите о себе"
     )
@@ -33,7 +39,6 @@ class User(AbstractUser):
     email = models.EmailField(
         "Адрес эл. почты",
         max_length=EMAIL_MAX_LEN,
-        blank=False,
         unique=True,
         help_text="Введите адрес электронной почты",
     )
