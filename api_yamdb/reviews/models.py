@@ -72,7 +72,6 @@ class Title(models.Model):
 
 class Review(models.Model):
     """Модель для Отзыва+рейтинг."""
-
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="reviews"
     )
