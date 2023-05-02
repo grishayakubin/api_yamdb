@@ -1,76 +1,30 @@
-from rest_framework import serializers
 from django.db.models import Avg
+from rest_framework import serializers
+from rest_framework.relations import SlugRelatedField
+
 from reviews.models import Category, Comment, Genre, Review, Title
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)
+class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для жанра."""
 
     class Meta:
-        fields = ('id', 'text', 'author', 'pub_date')
-        model = Comment
-        read_only_fields = ('author', 'pub_date',)
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)
-
-    class Meta:
-        fields = ('id', 'text', 'score', 'title', 'author', 'pub_date')
-        model = Review
-        read_only_fields = ('author', 'pub_date', 'id', 'text')
-
-    def validate_score(self, value):
-        if value not in [0, 10]:
-            raise serializers.ValidationError(
-                'Вы можете поставить оценку от 0 до 10'
-            )
-        return value
-
+        fields = ("name", "slug")
+        model = Genre
+        lookup_field = "slug"
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Category.
-    """
+    """Сериализатор для категории."""
 
     class Meta:
+        fields = ("name", "slug")
         model = Category
-        fields = ('id', 'name', 'slug')
-
-    def validate_name(self, value):
-        """
-        Проверяет длину названия категории.
-        """
-        if len(value) < 5:
-            raise serializers.ValidationError(
-                'Длина названия должна составлять не менее 5 символов.'
-            )
-        return value
+        lookup_field = "slug"
 
 
-class GenreSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Genre.
-    """
-
-    class Meta:
-        model = Genre
-        fields = ('id', 'name', 'slug')
-
-    def validate_name(self, value):
-        """
-        Проверяет длину названия жанра.
-        """
-        if len(value) < 5:
-            raise serializers.ValidationError(
-                'Длина названия должна составлять не менее 5 символов.'
-            )
-        return value
-
-
-class TitleViewSerializer(serializers.ModelSerializer):
-    '''Сериализатор для модели Title на чтение данных.'''
+class TitleRetrieveSerializer(serializers.ModelSerializer):
+    """Сериализатор для показа произведений."""
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
@@ -78,38 +32,71 @@ class TitleViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category',
+            "id",
+            "name",
+            "year",
+            "rating",
+            "description",
+            "genre",
+            "category",
         )
         model = Title
 
     def get_rating(self, obj):
-        obj = obj.reviews.all().aggregate(rating=Avg('score'))
-        return obj['rating']
+        obj = obj.reviews.all().aggregate(rating=Avg("score"))
+        return obj["rating"]
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    '''Сериализатор для модели Title на запись данных.'''
+class TitleWriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания произведений."""
 
     category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(), slug_field='slug'
+        queryset=Category.objects.all(), slug_field="slug"
     )
     genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(), slug_field='slug', many=True
+        queryset=Genre.objects.all(), slug_field="slug", many=True
     )
 
     class Meta:
-        fields = (
-            'id',
-            'name',
-            'description',
-            'year',
-            'category',
-            'genre'
-        )
+        fields = ("id", "name", "description", "year", "category", "genre")
         model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели ревью."""
+
+    author = SlugRelatedField(slug_field="username", read_only=True)
+
+    class Meta:
+        fields = ("id", "text", "author", "score", "pub_date")
+        model = Review
+
+    def validate(self, data):
+        """Запрещает пользователям писать второе ревью на произведение."""
+        request = self.context.get("request")
+        title_id = self.context.get("view").kwargs.get("title_id")
+        if (
+            request.method == "POST"
+            and Review.objects.filter(
+                author=request.user, title__id=title_id
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                "Писать второе ревью вне закона."
+            )
+        return data
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели комментария."""
+
+    author = serializers.SlugRelatedField(
+        slug_field="username",
+        read_only=True,
+        default=serializers.CurrentUserDefault(),
+    )
+
+    class Meta:
+        fields = ("id", "author", "review", "text", "pub_date")
+        read_only_fields = ("review",)
+        model = Comment

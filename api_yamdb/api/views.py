@@ -1,125 +1,107 @@
-
 from django.shortcuts import get_object_or_404
-from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework import filters, viewsets
 from rest_framework.viewsets import ModelViewSet
-from reviews.models import Category, Comment, Genre, Review, Title
-from reviews.models import Category, Genre, Title
-from .permissions import IsAdminUserOrReadOnly
+
+from api.permissions import (
+    IsAdminOrReadOnly,
+    IsAuthorModeratorAdminOrReadOnly,
+)
+from reviews.models import Category, Genre, Review, Title
+
+from .filters import TitleFilter
+from .mixins import GetListCreateDeleteMixin
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
-    TitleSerializer,
-    TitleViewSerializer,
-
+    TitleRetrieveSerializer,
+    TitleWriteSerializer,
 )
 
+
 class ReviewViewSet(ModelViewSet):
-    queryset = Review.objects.annotate(rating=Avg('score'))
+    """
+    Получить список всех отзывов.
+    Добавление нового отзыва.
+    Получение отзыва по id.
+    Обновление отзыва по id.
+    """
+
     serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
+    http_method_names = ("get", "post", "delete", "patch")
+
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user, title=self.get_title())
 
 
 class CommentViewSet(ModelViewSet):
-    serializer_class = CommentSerializer
+    """
+    Получить список всех комментариев.
+    Добавление нового комментария к отзыву.
+    Получить комментарий по id.
+    Обновление комментария по id.
+    Удаление комментария.
+    """
 
-    def perform_create(self, serializer):
-        review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
-        serializer.save(author=self.request.user, review=review)
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthorModeratorAdminOrReadOnly,)
+    http_method_names = ("get", "post", "delete", "patch")
+
+    def get_review(self):
+        return get_object_or_404(
+            Review,
+            id=self.kwargs.get("review_id"),
+            title_id=self.kwargs.get("title_id"),
+        )
 
     def get_queryset(self):
-        review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
-        return review.comments.all()
-    """
-    Класс-контроллер для обработки запросов, относящихся к категориям.
+        return self.get_review().comments.all()
 
-    Атрибуты:
-    - queryset: набор всех объектов модели Categories.
-    - serializer_class: класс сериализатора CategoriesSerializer.
-    - permission_classes: список классов разрешений для доступа к данным.
-        Добавить категорию может только админ, просматривать могут все.
-    """
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для произведения."""
+
+    queryset = Title.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+    http_method_names = ("get", "post", "delete", "patch")
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve"):
+            return TitleRetrieveSerializer
+        return TitleWriteSerializer
+
+
+class CategoryViewSet(GetListCreateDeleteMixin):
+    """Вьюсет для категории."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUserOrReadOnly, )
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ("name",)
+    lookup_field = "slug"
 
 
-class GenreViewSet(ModelViewSet):
-    """
-    Класс-контроллер для обработки запросов, относящихся к жанрам.
-
-    Атрибуты:
-    - queryset: набор всех объектов модели Genres.
-    - serializer_class: класс сериализатора GenresSerializer.
-    - permission_classes: список классов разрешений для доступа к данным.
-        Добавить жанр может только админ, просматривать могут все.
-    """
+class GenreViewSet(GetListCreateDeleteMixin):
+    """Вьюсет для жанра."""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminUserOrReadOnly, )
-
-
-class TitleViewSet(ModelViewSet):
-    """
-    Класс-контроллер для обработки запросов, относящихся к произведениям.
-
-    Атрибуты:
-    - queryset: набор всех объектов модели Titles.
-        Метод select_related() используется для предварительной загрузки
-        связанных объектов в одном запросе к базе данных.
-    - serializer_class: класс сериализатора TitlesSerializer.
-    - permission_classes: список классов разрешений для доступа к данным.
-        Добавить произведение может только админ, просматривать могут все.
-    - pagination_class: класс пагинации LimitOffsetPagination.
-    - filter_backends: список классов фильтрации и сортировки.
-    - filterset_fields: список полей для фильтрации.
-    - ordering_fields: список полей для сортировки.
-
-    Методы:
-    get_queryset(): получение отфильтрованного и отсортированного queryset.
-    get_serializer_class(): выбор сериализатора в зависимости от типа запроса.
-    """
-
-    queryset = Title.objects.all()
-    permission_classes = (IsAdminUserOrReadOnly, )
-    pagination_class = LimitOffsetPagination
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['category', 'genre']
-    ordering_fields = ['-pub_date']
-    http_method_names = ['get', 'post', 'delete', 'patch']
-
-    def get_queryset(self):
-        """
-        Получение отфильтрованного и отсортированного queryset.
-
-        Аргументы:
-        - self: экземпляр класса TitlesViewSet.
-
-        Возвращает:
-        - queryset: отфильтрованный и отсортированный queryset.
-        """
-        queryset = super().get_queryset()
-
-        search = self.request.query_params.get('search', None)
-        if search is not None:
-            queryset = queryset.filter(name__icontains=search)
-
-        return queryset
-
-    def get_serializer_class(self):
-        '''
-        Если запрос является запросом на чтение списка объектов
-        или одного объекта, то используется "TitleViewSerializer",
-        если нет, то "TitleSerializer".
-        '''
-        if self.action in ("list", "retrieve"):
-            return TitleViewSerializer
-        return TitleSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ("name",)
+    lookup_field = "slug"
