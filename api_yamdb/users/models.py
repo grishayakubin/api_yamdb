@@ -39,6 +39,7 @@ class User(AbstractUser):
     email = models.EmailField(
         "Адрес эл. почты",
         max_length=EMAIL_MAX_LEN,
+        blank=False,
         unique=True,
         help_text="Введите адрес электронной почты",
     )

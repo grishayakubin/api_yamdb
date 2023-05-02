@@ -45,6 +45,9 @@ class Title(models.Model):
         "Год выпуска",
         blank=True,
         validators=[MaxValueValidator(int(datetime.now().year))],
+    name = models.CharField(
+        max_length=50,
+        unique=True
     )
     description = models.TextField("Описание", blank=True)
     genre = models.ManyToManyField(
