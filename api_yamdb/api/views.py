@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend, CharFilter, FilterSet
+from django_filters.rest_framework import (
+    DjangoFilterBackend, CharFilter, FilterSet
+)
 from rest_framework import filters, status, viewsets
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.decorators import action, api_view, permission_classes
