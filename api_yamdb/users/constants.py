@@ -5,6 +5,8 @@ EMAIL_MAX_LEN: int = 254
 ROLE_MAX_LEN: int = 30
 USERNAME_MAX_LEN: int = 150
 
-USER = "user"
-MODERATOR = "moderator"
-ADMIN = "admin"
+
+class Role:
+    USER = "user"
+    MODERATOR = "moderator"
+    ADMIN = "admin"

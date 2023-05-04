@@ -3,32 +3,26 @@ from django.core.mail import send_mail
 from django.db import models
 from django.db.models import CharField
 
-from .constants import (
-    ADMIN,
-    CONF_CODE_MAX_LEN,
-    EMAIL_MAX_LEN,
-    MODERATOR,
-    ROLE_MAX_LEN,
-    USER,
-    USERNAME_MAX_LEN,
-)
+from .constants import Role
 from .validators import not_me_username_validator, username_validator
+
+CONF_CODE_MAX_LEN: int = 150
+EMAIL_MAX_LEN: int = 254
+ROLE_MAX_LEN: int = 30
+USERNAME_MAX_LEN: int = 150
 
 
 class User(AbstractUser):
     """Модель Пользователя."""
 
     ROLE_CHOICES = (
-        (USER, "user"),
-        (MODERATOR, "moderator"),
-        (ADMIN, "admin"),
+        (Role.USER, "user"),
+        (Role.MODERATOR, "moderator"),
+        (Role.ADMIN, "admin"),
     )
 
     first_name = models.CharField(
-        "Имя пользователя", blank=True, max_length=CONF_CODE_MAX_LEN
-    )
-    first_name = models.CharField(
-        "Имя пользователя", blank=True, max_length=CONF_CODE_MAX_LEN
+        "Имя", blank=True, max_length=CONF_CODE_MAX_LEN
     )
     bio = models.TextField(
         "Биография", blank=True, help_text="Здесь напишите о себе"
@@ -39,7 +33,6 @@ class User(AbstractUser):
     email = models.EmailField(
         "Адрес эл. почты",
         max_length=EMAIL_MAX_LEN,
-        blank=False,
         unique=True,
         help_text="Введите адрес электронной почты",
     )
@@ -83,16 +76,16 @@ class User(AbstractUser):
         return self.username
 
     def save(self, *args, **kwargs):
-        if self.role == MODERATOR:
+        if self.role == Role.MODERATOR:
             self.is_staff = True
-        if self.role == ADMIN:
+        if self.role == Role.ADMIN:
             self.is_superuser = True
         super().save(*args, **kwargs)
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return self.role == Role.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == Role.ADMIN

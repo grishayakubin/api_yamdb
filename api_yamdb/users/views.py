@@ -38,10 +38,7 @@ class UserViewSet(ModelViewSet):
         serializer = UserProfileSerializer(
             request.user, partial=True, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
         if request.method == "PATCH":
             serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -70,10 +67,7 @@ class GetAuthTokenView(APIView):
 
     def post(self, request):
         serializer = GetAuthTokenSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get("username")
         confirmation_code = serializer.validated_data.get("confirmation_code")
         user = get_object_or_404(User, username=username)
