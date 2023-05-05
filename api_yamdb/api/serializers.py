@@ -1,11 +1,15 @@
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from users.constants import CONF_CODE_MAX_LEN, EMAIL_MAX_LEN, USERNAME_MAX_LEN
 from users.validators import not_me_username_validator, username_validator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+
+CONF_CODE_MAX_LEN: int = 150
+EMAIL_MAX_LEN: int = 254
+ROLE_MAX_LEN: int = 30
+USERNAME_MAX_LEN: int = 150
 
 
 class GenreSerializer(serializers.ModelSerializer):

@@ -3,13 +3,18 @@ from django.core.mail import send_mail
 from django.db import models
 from django.db.models import CharField
 
-from .constants import Role
 from .validators import not_me_username_validator, username_validator
 
 CONF_CODE_MAX_LEN: int = 150
 EMAIL_MAX_LEN: int = 254
 ROLE_MAX_LEN: int = 30
 USERNAME_MAX_LEN: int = 150
+
+
+class Role:
+    USER = "user"
+    MODERATOR = "moderator"
+    ADMIN = "admin"
 
 
 class User(AbstractUser):
